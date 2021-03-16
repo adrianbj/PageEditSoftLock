@@ -49,10 +49,16 @@ class ProcessPageEditSoftLock extends Process{
 
 		$user_id = (int) $this->input->get->user_id;
 		$page_id = (int) $this->input->get->page_id;
+		$close = (int) $this->input->get->close;
 
 		if(!$user_id || !$page_id) return;
 
-		$this->db->query("INSERT INTO users_editing_page (page_id, user_id, ts) VALUES($page_id, $user_id, $time) ON DUPLICATE KEY UPDATE ts=VALUES(ts), user_id=VALUES(user_id)");
+		if($close === 1) {
+			$this->db->query("DELETE FROM users_editing_page WHERE page_id = '".$page_id."' AND user_id = '".$user_id."'");
+		}
+		else {
+			$this->db->query("INSERT INTO users_editing_page (page_id, user_id, ts) VALUES($page_id, $user_id, $time) ON DUPLICATE KEY UPDATE ts=VALUES(ts), user_id=VALUES(user_id)");
+		}
 
 		return "user_id: ".$user_id;
 	}

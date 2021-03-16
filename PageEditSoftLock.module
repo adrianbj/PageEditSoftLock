@@ -73,13 +73,15 @@ class PageEditSoftLock extends WireData implements Module, ConfigurableModule {
 <script type="text/javascript">
 
 $(function(){
-	var t = window.setInterval(pwsoftlockping,$interval);
-	function pwsoftlockping(){
-
+	var t = window.setInterval(pwsoftlockping, $interval);
+	window.addEventListener("beforeunload", function() {
+		pwsoftlockping(1);
+	});
+	function pwsoftlockping(close = 0){
 		$.ajax({
 			url: '$pingurl',
 			type: 'get',
-			data: 'user_id={$this->user->id}&page_id={$page->id}',
+			data: 'user_id={$this->user->id}&page_id={$page->id}&close='+close,
 			success: function(data){
 				//alert('udpated');
 			}
@@ -114,7 +116,7 @@ _END;
 				$event->return .= "<script>alert('".sprintf($this->_('Attention! This page is currently being edited by user: %1$s (%2$s)'),$user->name,$user->email)."')</script>";
 
 				// if hardlock turned on, don't output the edit form by overwriting the return value
-				if($config['hardLock'] == 1) {
+				if($config['hardLock'] == 1 && !$this->wire('user')->isSuperuser()) {
 					$event->return = "";
 					$event->return .= "<script>alert('".sprintf($this->_('Attention! This page is currently being edited by user: %1$s (%2$s)'),$user->name,$user->email)."')</script>";
 				}
